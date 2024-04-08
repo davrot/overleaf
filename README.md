@@ -1,4 +1,4 @@
-I bassed the installation on Fedora 39 Server Edition.
+I based the installation on Fedora 39 Server Edition.
 
 * Ansible will not work as long as SE Linux is active. Use the cockpit localhost:9090 to disable it for duration you need it to be tured off.
 * Don't forget to configure the firewalls correctly. Again, use cockpit.
