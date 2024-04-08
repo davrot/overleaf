@@ -1,0 +1,280 @@
+---
+# TODO: Need to fix the mongo db init
+
+- name: install overleaf
+  hosts: all
+  become: true
+
+  vars:
+    EMAIL__USERNAME: "{{ EUSER }}"
+    EMAIL__PASSWORD: "{{ EPASS }}"
+
+  tasks:
+
+    - name: Create network OverleafNet
+      community.docker.docker_network:
+        name: OverleafNet
+
+    - name: set smtpd_pre.conf
+      blockinfile:
+        path: /root/opensmtpd/smtpd_pre.conf
+        state: present
+        create: true
+        owner: "root"
+        group: "root"
+        mode: "0644"
+        block: |
+          listen on 0.0.0.0
+          listen on ::
+          
+          table aliases file:/etc/smtpd/aliases
+          
+          queue ttl 4d
+          bounce warn-interval 1h, 6h, 2d
+          smtp max-message-size 35M
+          
+          table authinfo db:/etc/smtpd/authinfo.db
+          action default relay host "smtps://user@mailhost.neurotec.uni-bremen.de:465" auth <authinfo> tls no-verify
+          match from any for any action default
+
+
+    - name: Create a volume overleafsmtpd_spool
+      community.docker.docker_volume:
+        name: overleafsmtpd_spool
+        state: present
+
+
+    - name: Create OpenSMTPd
+      community.docker.docker_container:
+        name: overleafsmtpd
+        image: wodby/opensmtpd
+        state: started
+        recreate: no
+        restart_policy: always
+        networks:
+          - name: OverleafNet
+        comparisons:
+          networks: strict
+        env:
+          RELAY_HOST: "XXX"
+          RELAY_PROTO: "smtps"
+          RELAY_PORT: "XXX"
+          RELAY_USER: "{{ EMAIL__USERNAME }}"
+          RELAY_PASSWORD: "{{ EMAIL__PASSWORD }}"
+
+        volumes:
+          - "/root/opensmtpd/smtpd_pre.conf:/etc/gotpl/smtpd.conf.tmpl"
+          - "overleafsmtpd_spool:/var/spool/smtpd"
+
+    - name: Create a volume overleaf_redis
+      community.docker.docker_volume:
+        name: overleaf_redis
+        state: present
+
+    - name: Create redis container
+      community.docker.docker_container:
+        name: overleafredis
+        image: docker.io/library/redis:6.2
+        state: started
+        recreate: no
+        restart_policy: always
+        healthcheck:
+          test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+          start_period: 20s
+          interval: 30s
+          retries: 5
+          timeout: 3s
+        command: --save 60 1 --loglevel warning
+        volumes:
+          - overleaf_redis:/data
+
+        networks:
+          - name: OverleafNet
+
+        comparisons:
+          networks: strict
+
+
+    - name: Create a volume overleaf_mongo
+      community.docker.docker_volume:
+        name: overleaf_mongo
+        state: present
+      register: mongo_volume_creation
+
+    - name: Create a volume overleaf_mongo_cdb
+      community.docker.docker_volume:
+        name: overleaf_mongo_cdb
+        state: present
+      register: mongo_volume_creation
+
+
+    - name: Create mongo container
+      community.docker.docker_container:
+        name: overleafmongo
+        image: mongo:5.0
+        state: started
+        recreate: no
+        restart_policy: always
+        healthcheck:
+          test: "mongosh --quiet --eval 'rs.hello().setName ? rs.hello().setName : rs.initiate({_id: \"overleaf\",members:[{_id: 0, host:\"overleafmongo:27017\"}]})'"
+          #echo 'db.stats().ok' | mongo localhost:27017/test --quiet
+          interval: 10s
+          timeout: 10s
+          retries: 5
+        command: --replSet overleaf
+        volumes:
+          - "overleaf_mongo:/data/db"
+          - "overleaf_mongo_cdb:/data/configdb"
+
+        networks:
+          - name: OverleafNet
+#          - name: bridge
+
+#        ports:
+#          - "27017:27017"
+
+        comparisons:
+          networks: strict
+
+#    - name: Prepare mongodb
+#      community.docker.docker_container_exec:
+#        container: overleafmongo
+#        command: sh -c 'mongo --eval "rs.initiate({ _id: \"overleaf\", members: [ { _id: 0, host: \"overleafmongo:27017\" } ] })"'
+#      when:  mongo_volume_creation.changed
+
+    - name: Create a volume overleaf_data
+      community.docker.docker_volume:
+        name: overleaf_data
+        state: present
+
+    - name: Create a volume overleaf_tex2024
+      community.docker.docker_volume:
+        name: overleaf_tex2024
+        state: present
+
+    - name: Create overleaf container
+      community.docker.docker_container:
+        name: overleaf
+        image: sharelatex/sharelatex
+        state: started
+        recreate: no
+        restart_policy: always
+
+        volumes:
+            - "overleaf_data:/var/lib/overleaf"
+            - "overleaf_tex2024:/usr/local/texlive/2024"
+            - "overleaf_tex2024:/usr/local/texlive/2023"
+            
+        networks:
+          - name: OverleafNet
+
+        comparisons:
+          networks: strict
+
+        env:
+          GIT_BRIDGE_ENABLED: "false"
+          GIT_BRIDGE_HOST: "git-bridge"
+          GIT_BRIDGE_PORT: "8000"
+          REDIS_HOST: "overleafredis"
+          REDIS_PORT: "6379"
+          V1_HISTORY_URL: "http://overleaf:3100/api"
+          OVERLEAF_MONGO_URL: "mongodb://overleafmongo/sharelatex"
+          OVERLEAF_REDIS_HOST: "overleafredis"
+          OVERLEAF_APP_NAME: "FB1 University of Bremen Overleaf"
+          ENABLED_LINKED_FILE_TYPES: "project_file,project_output_file"
+          ENABLE_CONVERSIONS: "true"
+          EMAIL_CONFIRMATION_DISABLED: "false"
+          OVERLEAF_BEHIND_PROXY: "true"
+          OVERLEAF_SECURE_COOKIE: "true"
+          OVERLEAF_SITE_URL: "https://overleaf.neuro.uni-bremen.de"
+          OVERLEAF_NAV_TITLE: "FB1 Overleaf"
+
+          OVERLEAF_ADMIN_EMAIL: "overleaf@neuro.uni-bremen.de"
+          OVERLEAF_EMAIL_FROM_ADDRESS: "overleaf@neuro.uni-bremen.de"
+          OVERLEAF_EMAIL_SMTP_HOST: "overleafsmtpd"
+          OVERLEAF_EMAIL_SMTP_PORT: "25"
+          OVERLEAF_EMAIL_SMTP_SECURE: "false"
+          OVERLEAF_EMAIL_SMTP_LOGGER: "true"
+          OVERLEAF_CUSTOM_EMAIL_FOOTER: "This system is run by the ITP"
+
+    - name: set nginx.conf
+      blockinfile:
+        path: /root/nginx/nginx.conf
+        state: present
+        create: true
+        owner: "root"
+        group: "root"
+        mode: "0644"
+        block: |
+          events {}
+          http {
+            server {
+              listen 80 default_server;
+              server_name _;
+              return 301 https://$host$request_uri;
+            }
+            server {
+              listen 443 ssl;
+              ssl_certificate      /certs/nginx_certificate.pem;
+              ssl_certificate_key  /certs/nginx_key.pem;
+              ssl_protocols               TLSv1 TLSv1.1 TLSv1.2;
+              ssl_prefer_server_ciphers   on;
+              ssl_ciphers                 EECDH+CHACHA20:EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5;
+              add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+              server_tokens off;
+              client_max_body_size 50M;
+
+              location / {
+                proxy_pass http://overleaf:80;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_set_header Host $host;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_read_timeout 3m;
+                proxy_send_timeout 3m;
+              }
+            }
+          }
+
+    - name: Create nginx container
+      community.docker.docker_container:
+        name: overleafnginx
+        image: "nginx:stable-alpine"
+        state: started
+        recreate: no
+        restart_policy: always
+
+        volumes:
+          - "/root/nginx/key.pem:/certs/nginx_key.pem:ro"
+          - "/root/nginx/ca.pem:/certs/nginx_certificate.pem:ro"
+          - "/root/nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+
+        ports:
+          - "0.0.0.0:443:443"
+          - "0.0.0.0:80:80"
+        env:
+          NGINX_WORKER_PROCESSES: "4"
+          NGINX_WORKER_CONNECTIONS: "768"
+
+        networks:
+          - name: OverleafNet
+
+        comparisons:
+          networks: strict
+
+    - name: Post install info (1)
+      debug:
+        msg: "Restart Overleaf docker container"
+
+    - name: Post install info (2)
+      debug:
+        msg: "Don't forget to place the cerificates onto the server"
+
+    - name: Post install info (3)
+      debug:
+        msg: "Initial Overleaf user: got https://overleaf.neuro.uni-bremen.de/launchpad "
+
+
+
