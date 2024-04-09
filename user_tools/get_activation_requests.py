@@ -8,7 +8,7 @@ import json
 def get_activation_requests(remove_old_entries: bool = False) -> list[dict]:
     results: list[dict] = []
 
-    filename = "last_run.pkl"
+    filename = "last_run_activations.pkl"
 
     with open("config_mail.json", "r") as file:
         config = json.load(file)

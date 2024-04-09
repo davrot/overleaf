@@ -1,8 +1,5 @@
-# pip install email_validator
 import imaplib
 import json
-import email.utils
-from email_validator import validate_email, EmailNotValidError  # type: ignore
 
 
 def check_mails(
@@ -62,60 +59,5 @@ def check_mails(
 
         # close inbox
         imap_connection.close()
-
-    return result
-
-
-def process_emails(
-    mail_to_process: list[dict],
-    config_file: str = "allowed_domains.json",
-    blocked_user_file: str = "blocked_users.json",
-) -> list[dict]:
-
-    result: list[dict] = []
-
-    with open(config_file, "r") as file:
-        allowed_domains: dict = json.load(file)
-
-    with open(blocked_user_file, "r") as file:
-        blocked_users: dict = json.load(file)
-
-    for mail in mail_to_process:
-        temp = email.utils.parseaddr(mail["from"])[1]
-        if (temp != "") and (temp is not None):
-
-            email_status: bool = False
-
-            try:
-                emailinfo = validate_email(temp, check_deliverability=False)
-                email_status = True
-                temp = emailinfo.normalized
-            except EmailNotValidError:
-                email_status = False
-
-            domain_found = False
-            if email_status:
-                for domain in allowed_domains["allowed_domains"]:
-                    if temp.endswith(domain):
-                        domain_found = True
-
-                if domain_found:
-                    for blocked_user in blocked_users["blocked_users"]:
-                        if temp == blocked_user:
-                            domain_found = False
-
-            if domain_found:
-                from_validated_ab = email.utils.parseaddr(mail["from"])
-                from_validated = validate_email(
-                    from_validated_ab[1], check_deliverability=False
-                )
-                result.append(
-                    {
-                        "from_a": from_validated_ab[0],
-                        "from_b": from_validated.normalized,
-                        "to": mail["to"],
-                        "subject": mail["subject"],
-                    }
-                )
 
     return result
