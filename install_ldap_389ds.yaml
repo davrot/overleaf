@@ -1,0 +1,58 @@
+---
+- name: install ldap
+  hosts: all
+  become: true
+
+  vars:
+    ldap_pwd: "{{ env_ldap_pw }}"
+
+  tasks:
+
+    - name: install sssd
+      dnf:
+        name: "sssd,sssd-client"
+        state: latest
+        update_cache: true
+        skip_broken: true
+        nobest: false
+        allowerasing: true
+
+    - name: install 389
+      dnf:
+        name: "389-ds-base"
+        state: latest
+        update_cache: true
+        skip_broken: true
+        nobest: false
+        allowerasing: true
+
+
+    - name: set instance.inf
+      blockinfile:
+        path: /root/instance.inf
+        state: present
+        create: true
+        owner: "root"
+        group: "root"
+        mode: "0666"
+        block: |
+          [general]
+          full_machine_name = overleaf.neuro.uni-bremen.de
+          start = True
+          strict_host_checking = False
+          
+          [slapd]
+          instance_name = localhost
+          root_dn = cn=admin
+          root_password = {{ ldap_pwd }}
+          port = 389
+          secure_port = 636
+          self_sign_cert = True
+          
+          [backend-userroot]
+          sample_entries = yes
+          suffix = dc=overleaf,dc=neuro,dc=uni-bremen,dc=de
+
+# cd /root ; dscreate from-file instance.inf
+
+# ldapsearch -x -H ldap://overleaf.neuro.uni-bremen.de -s base -b "" "objectclass=*"

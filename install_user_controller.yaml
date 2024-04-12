@@ -1,0 +1,36 @@
+---
+
+- name: install overleaf fedora controller
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: Create a volume
+      community.docker.docker_volume:
+        name: overleaf_python
+        state: present
+
+    - name: Create overleaf python container
+      community.docker.docker_container:
+        name: overleafpython
+        image: "python:3.11.9-alpine3.19"
+        state: started
+        recreate: no
+        restart_policy: always
+        command: sleep infinity
+
+        volumes:
+          - "overleaf_python:/data"
+          - "/var/run/docker.sock:/var/run/docker.sock"
+
+        networks:
+          - name: OverleafNet
+
+        comparisons:
+          networks: strict
+
+
+
+
+

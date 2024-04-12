@@ -1,0 +1,210 @@
+---
+- name: install authentik
+  hosts: all
+  become: true
+  vars:
+    PG_PASS: "{{ PPASS }}"
+    AUTHENTIK_PASS: "{{ APASS }}"
+    EMAIL__USERNAME: "{{ EUSER }}"
+    EMAIL__PASSWORD: "{{ EPASS }}"
+
+
+  tasks:
+
+    - name: Create network AuthentikNet
+      community.docker.docker_network:
+        name: AuthentikNet
+
+    - name: set smtpd_pre.conf
+      blockinfile:
+        path: /root/opensmtpd/smtpd_pre.conf
+        state: present
+        create: true
+        owner: "root"
+        group: "root"
+        mode: "0644"
+        block: |
+          listen on 0.0.0.0
+          listen on ::
+          
+          table aliases file:/etc/smtpd/aliases
+          
+          queue ttl 4d
+          bounce warn-interval 1h, 6h, 2d
+          smtp max-message-size 35M
+          
+          table authinfo db:/etc/smtpd/authinfo.db
+          action default relay host "smtps://user@mailhost.neurotec.uni-bremen.de:465" auth <authinfo> tls no-verify
+          match from any for any action default
+
+    - name: Create a volume authentiksmtpd_spool
+      community.docker.docker_volume:
+        name: authentiksmtpd_spool
+        state: present
+
+    - name: Create OpenSMTPd
+      community.docker.docker_container:
+        name: authentiksmtpd
+        image: wodby/opensmtpd
+        state: started
+        recreate: no
+        restart_policy: always
+        networks:
+          - name: AuthentikNet
+        comparisons:
+          networks: strict
+        env:
+          RELAY_HOST: "XXX"
+          RELAY_PROTO: "smtps"
+          RELAY_PORT: "XXX"
+          RELAY_USER: "{{ EMAIL__USERNAME }}"
+          RELAY_PASSWORD: "{{ EMAIL__PASSWORD }}"
+
+        volumes:
+          - "/root/opensmtpd/smtpd_pre.conf:/etc/gotpl/smtpd.conf.tmpl"
+          - "authentiksmtpd_spool:/var/spool/smtpd"
+
+
+    - name: Create a volume authentik_database
+      community.docker.docker_volume:
+        name: authentik_database
+        state: present
+
+    - name: Create postgresql container
+      community.docker.docker_container:
+        name: authentikpostgresql
+        image: docker.io/library/postgres:12-alpine
+        state: started
+        recreate: no
+        restart_policy: always
+        volumes:
+          - authentik_database:/var/lib/postgresql/data
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -d authentik -U authentik"]
+          start_period: 20s
+          interval: 30s
+          retries: 5
+          timeout: 5s
+        networks:
+          - name: AuthentikNet
+        comparisons:
+          networks: strict
+        env:
+          POSTGRES_PASSWORD: "{{ PG_PASS }}"
+          POSTGRES_USER: authentik
+          POSTGRES_DB: authentik
+
+    - name: Create a volume authentik_redis
+      community.docker.docker_volume:
+        name: authentik_redis
+        state: present
+
+    - name: Create redis container
+      community.docker.docker_container:
+        name: authentikredis
+        image: docker.io/library/redis:alpine
+        state: started
+        recreate: no
+        restart_policy: always
+        healthcheck:
+          test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+          start_period: 20s
+          interval: 30s
+          retries: 5
+          timeout: 3s
+        command: --save 60 1 --loglevel warning
+        networks:
+          - name: AuthentikNet
+        comparisons:
+          networks: strict
+        volumes:
+          - authentik_redis:/data
+
+    - name: Create a volume authentik_media
+      community.docker.docker_volume:
+        name: authentik_media
+        state: present
+
+    - name: Create a volume authentik_custom_templates
+      community.docker.docker_volume:
+        name: authentik_custom_templates
+        state: present
+
+    - name: Create authentikserver container
+      community.docker.docker_container:
+        name: authentikserver
+        image: ghcr.io/goauthentik/server:2024.2.2
+        command: server
+        state: started
+        recreate: no
+        restart_policy: always
+        env:
+          AUTHENTIK_REDIS__HOST: authentikredis
+          AUTHENTIK_POSTGRESQL__HOST: authentikpostgresql
+          AUTHENTIK_POSTGRESQL__USER: authentik
+          AUTHENTIK_POSTGRESQL__NAME: authentik
+          AUTHENTIK_POSTGRESQL__PASSWORD: "{{ PG_PASS }}"
+          AUTHENTIK_SECRET_KEY: "{{ AUTHENTIK_PASS }}"
+          AUTHENTIK_EMAIL__HOST: "authentiksmtpd"
+          AUTHENTIK_EMAIL__PORT: "25"
+          AUTHENTIK_EMAIL__USE_TLS: "false"
+          AUTHENTIK_EMAIL__USE_SSL: "false"
+          # AUTHENTIK_EMAIL__TIMEOUT: 10
+          AUTHENTIK_EMAIL__FROM: "overleaf@neuro.uni-bremen.de"
+          AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+
+        networks:
+          - name: AuthentikNet
+        comparisons:
+          networks: strict
+          
+        volumes:
+          - authentik_media:/media
+          - authentik_custom_templates:/templates
+        ports:
+          - "10000:9000"
+          - "10443:9443"
+
+    - name: Create a volume authentik_certs
+      community.docker.docker_volume:
+        name: authentik_certs
+        state: present
+
+    - name: Create authentikworker container 
+      community.docker.docker_container:
+        name: authentikworker
+        image: ghcr.io/goauthentik/server:2024.2.2
+        command: worker
+        state: started
+        recreate: no
+        restart_policy: always
+        env:
+          AUTHENTIK_REDIS__HOST: authentikredis
+          AUTHENTIK_POSTGRESQL__HOST: authentikpostgresql
+          AUTHENTIK_POSTGRESQL__USER: authentik
+          AUTHENTIK_POSTGRESQL__NAME: authentik
+          AUTHENTIK_POSTGRESQL__PASSWORD: "{{ PG_PASS }}"
+          AUTHENTIK_SECRET_KEY: "{{ AUTHENTIK_PASS }}"
+          AUTHENTIK_EMAIL__HOST: "authentiksmtpd"
+          AUTHENTIK_EMAIL__PORT: "25"
+          AUTHENTIK_EMAIL__USE_TLS: "false"
+          AUTHENTIK_EMAIL__USE_SSL: "false"
+          # AUTHENTIK_EMAIL__TIMEOUT: 10
+          AUTHENTIK_EMAIL__FROM: "overleaf@neuro.uni-bremen.de"
+          AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+
+        networks:
+          - name: AuthentikNet
+        comparisons:
+          networks: strict
+
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - authentik_media:/media
+          - authentik_custom_templates:/templates
+          - authentik_certs:/certs
+        user: root
+
+    - name: Post install info
+      debug:
+        msg: "http://<your server's IP or hostname>:10443/if/flow/initial-setup/"
