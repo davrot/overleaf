@@ -1,0 +1,17 @@
+services:
+  mongo:
+    image: "mongo:5.0"
+    container_name: "mongo"
+    hostname: "mongo"
+    restart: always
+    volumes:
+      - mongo:/data/db
+      - mongo_cdb:/data/configdb
+    ports:
+      - 27017:27017
+    network_mode: bridge
+
+volumes:
+  mongo:
+  mongo_cdb:
+
