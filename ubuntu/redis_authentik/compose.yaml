@@ -1,5 +1,5 @@
 services:
-  redis:
+  redisauth:
     image: "redis:alpine"
     container_name: "redis-authentik"
     hostname: "redis-authentik"
