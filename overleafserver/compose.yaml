@@ -18,20 +18,6 @@
 # iptables -t nat -A POSTROUTING ! -o docker0 -s 172.18.0.0/16 -j MASQUERADE
 # iptables -t nat -A POSTROUTING ! -o br-ff9f46af3644 -s 172.18.0.0/16 -j MASQUERADE
 
-##############
-# TEX UPDATE #
-##############
-
-### For updating the tex, disable the other network setting and use:
-# And then we update the tex with:
-# docker exec -it overleafserver /bin/bash
-# cd /root
-# rm -rf install-tl-*
-# curl -L -o tl-unx.tar.gz https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
-# tar -xzf tl-unx.tar.gz
-# cd install-tl-*
-# perl ./install-tl --no-interaction
-
 services:
   overleafserver:
     image: "sharelatex/sharelatex"
