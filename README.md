@@ -25,6 +25,10 @@ echo "}" >> /etc/docker/daemon.json
 
 systemctl restart docker
 
+sed -i -e 's/DEFAULT_FORWARD_POLICY="DROP"/DEFAULT_FORWARD_POLICY="ACCEPT"/g' /etc/default/ufw
+ufw reload
+iptables -t nat -A POSTROUTING ! -o docker0 -s 172.18.0.0/16 -j MASQUERADE
+
 ufw allow in on docker0
 ufw route allow in on docker0
 ufw route allow out on docker0
