@@ -1,0 +1,14 @@
+docker network create overleaf-network
+
+# FIREWALL NOTES:
+
+# Add the overlead-network to the firewall
+docker network ls | grep overleaf-network
+ufw allow in on br-ff9f46af3644
+ufw route allow in on br-ff9f46af3644
+ufw route allow out on br-ff9f46af3644
+iptables -t nat -A POSTROUTING ! -o br-ff9f46af3644 -s 172.18.0.0/16 -j MASQUERADE
+
+# For removing firewall settings we don't want:
+ufw status numbered
+ufw delete [NUMBER]
