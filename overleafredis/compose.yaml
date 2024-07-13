@@ -1,0 +1,28 @@
+# docker network create overleaf-network
+services:
+  overleafredis:
+    image: "redis:6.2-alpine"
+    container_name: overleafredis
+    hostname: overleafredis
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    command: --save 60 1 --loglevel warning
+    volumes:
+      - overleaf_redis:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    expose:
+      - 6379
+    networks:
+      - overleaf-network
+
+volumes:
+  overleaf_redis:
+
+networks:
+  overleaf-network:
+    external: true

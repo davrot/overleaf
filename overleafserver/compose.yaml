@@ -1,0 +1,82 @@
+# docker network create overleaf-network
+# FIREWALL NOTES:
+# docker network ls | grep overleaf-network
+#
+# ufw allow in on br-ff9f46af3644
+# ufw route allow in on br-ff9f46af3644
+# ufw route allow out on br-ff9f46af3644
+#
+# ufw status numbered
+# ufw delete [NUMBER]
+# sed -i -e 's/DEFAULT_FORWARD_POLICY="DROP"/DEFAULT_FORWARD_POLICY="ACCEPT"/g' /etc/default/ufw
+# ufw reload
+#
+# iptables -t nat -A POSTROUTING ! -o docker0 -s 172.18.0.0/16 -j MASQUERADE
+# iptables -t nat -A POSTROUTING ! -o br-ff9f46af3644 -s 172.18.0.0/16 -j MASQUERADE
+
+##############
+# TEX UPDATE #
+##############
+
+### For updating the tex, disable the other network setting and use:
+# And then we update the tex with:
+# docker exec -it overleafserver /bin/bash
+# cd /root
+# rm -rf install-tl-*
+# curl -L -o tl-unx.tar.gz https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
+# tar -xzf tl-unx.tar.gz
+# cd install-tl-*
+# perl ./install-tl --no-interaction
+
+services:
+  overleafserver:
+    image: "sharelatex/sharelatex"
+    container_name: overleafserver
+    hostname: overleafserver
+    restart: always
+    volumes:
+      - overleaf_data:/var/lib/overleaf
+      - overleaf_tex2024:/usr/local/texlive/2024
+      - overleaf_tex2024:/usr/local/texlive/2023
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    ports:
+      - 11001:80
+    environment:
+      GIT_BRIDGE_ENABLED: "false"
+      GIT_BRIDGE_HOST: "git-bridge"
+      GIT_BRIDGE_PORT: "8000"
+
+      REDIS_HOST: "overleafredis"
+      REDIS_PORT: "6379"
+      OVERLEAF_REDIS_HOST: "overleafredis"
+
+      V1_HISTORY_URL: "http://127.0.0.1:3100/api"
+      OVERLEAF_MONGO_URL: "mongodb://overleafmongo/sharelatex"
+      OVERLEAF_APP_NAME: "FB1 University of Bremen Overleaf"
+      ENABLED_LINKED_FILE_TYPES: "project_file,project_output_file"
+      ENABLE_CONVERSIONS: "true"
+      EMAIL_CONFIRMATION_DISABLED: "false"
+      OVERLEAF_BEHIND_PROXY: "true"
+      OVERLEAF_SECURE_COOKIE: "true"
+      OVERLEAF_SITE_URL: "https://overleaf.neuro.uni-bremen.de"
+      OVERLEAF_NAV_TITLE: "FB1 Overleaf"
+
+      OVERLEAF_ADMIN_EMAIL: "overleaf@neuro.uni-bremen.de"
+      OVERLEAF_EMAIL_FROM_ADDRESS: "overleaf@neuro.uni-bremen.de"
+      OVERLEAF_EMAIL_SMTP_HOST: "overleafsmtpd"
+      OVERLEAF_EMAIL_SMTP_PORT: "25"
+      OVERLEAF_EMAIL_SMTP_SECURE: "false"
+      OVERLEAF_EMAIL_SMTP_LOGGER: "true"
+      OVERLEAF_CUSTOM_EMAIL_FOOTER: "This system is run by the ITP"
+    networks:
+      - overleaf-network
+
+volumes:
+  overleaf_data:
+  overleaf_tex2024:
+
+networks:
+  overleaf-network:
+    external: true
+
