@@ -1,0 +1,77 @@
+services:
+  authentikserver:
+    image: "ghcr.io/goauthentik/server:2024.6.1"
+    container_name: authentikserver
+    hostname: authentikserver
+    restart: always
+
+    command: server
+
+    volumes:
+      - authentik_media:/media
+      - authentik_custom_templates:/templates
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    ports:
+      - 9000:9000
+      - 9443:9443
+
+    environment:
+      AUTHENTIK_REDIS__HOST: authentikredis
+      AUTHENTIK_POSTGRESQL__HOST: authentikpostgres
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${ROOT_PASSWORD}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      AUTHENTIK_EMAIL__HOST: "overleafsmtpd"
+      AUTHENTIK_EMAIL__PORT: "25"
+      AUTHENTIK_EMAIL__USE_TLS: "false"
+      AUTHENTIK_EMAIL__USE_SSL: "false"
+      # AUTHENTIK_EMAIL__TIMEOUT: 10
+      AUTHENTIK_EMAIL__FROM: "overleaf@neuro.uni-bremen.de"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+    networks:
+      - overleaf-network
+
+  authentikworker:
+    image: "ghcr.io/goauthentik/server:2024.6.1"
+    container_name: authentikworker
+    hostname: authentikworker
+    restart: always
+
+    command: worker
+
+    volumes:
+      - authentik_media:/media
+      - authentik_custom_templates:/templates
+      - authentik_certs:/certs
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    environment:
+      AUTHENTIK_REDIS__HOST: authentikredis
+      AUTHENTIK_POSTGRESQL__HOST: authentikpostgres
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${ROOT_PASSWORD}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      AUTHENTIK_EMAIL__HOST: "overleafsmtpd"
+      AUTHENTIK_EMAIL__PORT: "25"
+      AUTHENTIK_EMAIL__USE_TLS: "false"
+      AUTHENTIK_EMAIL__USE_SSL: "false"
+      # AUTHENTIK_EMAIL__TIMEOUT: 10
+      AUTHENTIK_EMAIL__FROM: "overleaf@neuro.uni-bremen.de"
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+
+    networks:
+      - overleaf-network
+
+    user: root
+
+volumes:
+  authentik_media:
+  authentik_custom_templates:
+  authentik_certs:
+
+networks:
+  overleaf-network:
+    external: true
