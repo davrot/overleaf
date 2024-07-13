@@ -1,46 +1,39 @@
-I based the installation on Fedora 39 Server Edition.
-
-* Ansible will not work as long as SE Linux is active. Use the cockpit localhost:9090 to disable it for duration you need it to be tured off.
-* Don't forget to configure the firewalls correctly. Again, use cockpit.
-* Portainer is exported to port 9443. You should use it for coordinating the docker chaos.
-
-You need to scroll though the files and change the values to your setup. 
-
-# How make a computer ready for ansible
-
 ```
-dnf -y install ansible mc net-tools openssh-server openssh-clients passwdqc cracklib-dicts shadow-utils
+apt update
+apt upgrade
 
-systemctl enable sshd
-systemctl start sshd
+apt install git pkg-config libssl-dev curl mc argon2 ca-certificates net-tools
 
-useradd -b /specialusers ansibleuser
-passwd_value="PUT_A_PASSWORD_HERE"
-echo ansibleuser:$passwd_value | chpasswd
-echo "ansibleuser ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/ansible
-```
+install -m 0755 -d /etc/apt/keyrings
 
-# How to make the server ready
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 
-Once:
-```
-dnf -y install ansible mc net-tools openssh-server openssh-clients passwdqc cracklib-dicts shadow-utils sshpass
+chmod a+r /etc/apt/keyrings/docker.asc
 
-ssh-keygen
-```
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-And then for every computer:
+apt-get update
 
-```
-passwd_value="PUT_A_PASSWORD_HERE"
-sshpass -p "$passwd_value" ssh-copy-id -o "StrictHostKeyChecking accept-new" ansibleuser@COMPUTERNAME
-```
-# Overleaf yaml file
+apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-For the smtp relay we need to set the email password and email user. You can provide it via command line parameter or yaml file to ansible-playbook. 
+echo "{" > /etc/docker/daemon.json
+echo '  "iptables": false' >> /etc/docker/daemon.json 
+echo "}" >> /etc/docker/daemon.json  
 
-```
----
-    EUSER: "SOME EMAIL USER"
-    EPASS: "SOME PASSWORD"
+systemctl restart docker
+
+ufw allow in on docker0
+ufw route allow in on docker0
+ufw route allow out on docker0
+
+ufw allow 22
+ufw allow 443
+ufw enable
+
+ufw status verbose
+
+docker run hello-world
 ```
