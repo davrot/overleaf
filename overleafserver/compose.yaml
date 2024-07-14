@@ -32,14 +32,17 @@ services:
       OVERLEAF_SECURE_COOKIE: "true"
       OVERLEAF_SITE_URL: "https://overleaf.neuro.uni-bremen.de"
       OVERLEAF_NAV_TITLE: "FB1 Overleaf"
-
-      OVERLEAF_ADMIN_EMAIL: "overleaf@neuro.uni-bremen.de"
-      OVERLEAF_EMAIL_FROM_ADDRESS: "overleaf@neuro.uni-bremen.de"
-      OVERLEAF_EMAIL_SMTP_HOST: "overleafsmtpd"
-      OVERLEAF_EMAIL_SMTP_PORT: "25"
-      OVERLEAF_EMAIL_SMTP_SECURE: "false"
+      OVERLEAF_ADMIN_EMAIL: "overleaf@uni-bremen.de"
+      
+      OVERLEAF_EMAIL_FROM_ADDRESS: "overleaf@uni-bremen.de"
+      OVERLEAF_EMAIL_SMTP_HOST: "smtp.uni-bremen.de"
+      OVERLEAF_EMAIL_SMTP_PORT: "465"
+      OVERLEAF_EMAIL_SMTP_SECURE: "true"
+      OVERLEAF_EMAIL_SMTP_USER: "overleaf"
+      OVERLEAF_EMAIL_SMTP_PASS: ${EMAIL_PASS}
       OVERLEAF_EMAIL_SMTP_LOGGER: "true"
       OVERLEAF_CUSTOM_EMAIL_FOOTER: "This system is run by the ITP"
+
     networks:
       - overleaf-network
 
