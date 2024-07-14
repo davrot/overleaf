@@ -1,0 +1,13 @@
+docker exec -it overleafserver bash
+vi /overleaf/services/web/app/src/Features/User/UserRegistrationHandler.js
+
+Goto line 117:
+EmailHandler.promises.sendEmail('registered', {
+
+Then add an.
+await.
+in front of it.
+
+exit container
+
+docker commit overleafserver overleaf/overleaf
