@@ -42,7 +42,7 @@ def index() -> Response:
 
         if user_captcha and user_captcha.upper() == session.get('captcha'):
             if process_emails(mail_address=email,container_name_mongo=container_name_mongo,port_mongo=port_mongo,container_name_overleaf=container_name_overleaf):
-                return f"A email was sent to {email}. Please click the activation link. Please check your spam folder!"
+                return f"A email was sent to {email}. Please click the activation link. Please check your spam folder! <p> <a href='https://overleaf.neuro.uni-bremen.de/'>Back to the overleaf site...</a>"
             else:
                 return f"We couldn't register your email {email}."
         else:
