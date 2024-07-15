@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register your overleaf account</title>
+
+</head>
+<body>
+    <header>
+        <img src="/register/static/logo.png" alt="Logo" style="max-width: 200px;">
+    </header>
+
+    <h1>Register your overleaf account</h1>
+    <form method="POST" id="demo-form">
+        <div>
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <p>
+        <div>
+            <label for="captcha">CAPTCHA:</label>
+            <br>
+            <img src="data:image/png;base64,{{ captcha_image }}" alt="CAPTCHA">
+            <br>
+            <input type="text" id="captcha" name="captcha" required>
+        </div>
+        <p>
+        <button type="submit">Register</button>
+    </form>
+
+
+<p>
+<h1>Allgemeines</h1>
+<a href="https://www.uni-bremen.de/impressum">Impressum</a><br>
+<a href="https://www.uni-bremen.de/datenschutz">Datenschutz</a><br>
+<a href="https://www.uni-bremen.de/notfall">Notfall</a>
+
+</body>
+</html>
