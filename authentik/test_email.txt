@@ -1,2 +1,0 @@
-docker exec -it authentikworker bash
-ak test_email <to address>
