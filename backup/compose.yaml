@@ -1,0 +1,48 @@
+services:
+  backup:
+    image: "backup_image"
+    container_name: backup
+    hostname: backup
+    restart: always
+
+    networks:
+      - overleaf-network
+
+    volumes:
+      - /root/backup/backup:/data/backup:ro
+      - /root/backup/backup.pub:/data/backup.pub:ro
+      - overleafmongo_overleaf_mongo:/data/backup_docker/overleafmongo_overleaf_mongo
+      - overleafmongo_overleaf_mongo_cdb:/data/backup_docker/overleafmongo_overleaf_mongo_cdb
+      - overleafredis_overleaf_redis:/data/backup_docker/overleafredis_overleaf_redis
+      - overleafregister_overleaf_register:/data/backup_docker/overleafregister_overleaf_register
+      - overleafserver_overleaf_data:/data/backup_docker/overleafserver_overleaf_data
+      - overleafserver_overleaf_tex2024:/data/backup_docker/overleafserver_overleaf_tex2024
+
+volumes:
+  overleafmongo_overleaf_mongo:
+   external: true
+   name: overleafmongo_overleaf_mongo
+
+  overleafmongo_overleaf_mongo_cdb:
+   external: true
+   name: overleafmongo_overleaf_mongo_cdb
+
+  overleafredis_overleaf_redis:
+   external: true
+   name: overleafredis_overleaf_redis
+
+  overleafregister_overleaf_register:
+   external: true
+   name: overleafregister_overleaf_register
+
+  overleafserver_overleaf_data:
+   external: true
+   name: overleafserver_overleaf_data
+
+  overleafserver_overleaf_tex2024:
+   external: true
+   name: overleafserver_overleaf_tex2024
+
+networks:
+  overleaf-network:
+    external: true
