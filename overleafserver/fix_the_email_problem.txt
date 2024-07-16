@@ -8,6 +8,4 @@ Then add an.
 await.
 in front of it.
 
-exit container
-
-docker commit overleafserver overleaf/overleaf
+I decided that I edit it externally and mount the fixed file into the docker container. 
