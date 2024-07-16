@@ -1,0 +1,24 @@
+services:
+  checkuser:
+    image: "overleafregister_image"
+    container_name: checkuser
+    hostname: checkuser
+    restart: always
+
+    networks:
+      - overleaf-network
+
+    volumes:
+      - checkuser:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /root/check_users/list_user.py:/data/list_user.py
+      - /root/check_users/list_invited.py:/data/list_invited.py
+
+    entrypoint: ["/bin/sh", "-c","sleep infinity"]
+
+volumes:
+  checkuser:
+
+networks:
+  overleaf-network:
+    external: true
