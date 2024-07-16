@@ -42,4 +42,23 @@ ufw enable
 ufw status verbose
 
 docker run hello-world
+
+# Mail
+# Add root to the /etc/alias file and add the msmtprc file to /etc
+apt -y install msmtp msmtp-mta mailutils
+vi /etc/msmtprc
+chmod 644 /etc/msmtprc
+touch /var/log/msmtp.log
+chmod 666 /var/log/msmtp.log
+# ln -s /usr/bin/msmtp /usr/sbin/sendmail
+
+# echo "Test message" | mail -s "Test subject" root
+```
+
+Don't forget to set up the cron job for the backup:
+
+```
+crontab -e
+
+0 0 * * * /bin/bash /root/backup/make_backup.sh
 ```
