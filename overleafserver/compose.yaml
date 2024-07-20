@@ -38,20 +38,20 @@ services:
       EMAIL_CONFIRMATION_DISABLED: "false"
       OVERLEAF_BEHIND_PROXY: "true"
       OVERLEAF_SECURE_COOKIE: "true"
-      OVERLEAF_SITE_URL: "https://psintern.neuro.uni-bremen.de"
+      OVERLEAF_SITE_URL: "https://overlead.neuro.uni-bremen.de"
       OVERLEAF_NAV_TITLE: "FB1 Overleaf"
-      OVERLEAF_ADMIN_EMAIL: "psintern@neuro.uni-bremen.de"
+      OVERLEAF_ADMIN_EMAIL: "overleaf@uni-bremen.de"
       
-      OVERLEAF_EMAIL_FROM_ADDRESS: "psintern@neuro.uni-bremen.de"
-      OVERLEAF_EMAIL_SMTP_HOST: "mailhost.neurotec.uni-bremen.de"
+      OVERLEAF_EMAIL_FROM_ADDRESS: "overleaf@uni-bremen.de"
+      OVERLEAF_EMAIL_SMTP_HOST: "smtp.uni-bremen.de"
       OVERLEAF_EMAIL_SMTP_PORT: "465"
       OVERLEAF_EMAIL_SMTP_SECURE: "true"
-      OVERLEAF_EMAIL_SMTP_USER: "psintern"
+      OVERLEAF_EMAIL_SMTP_USER: "overleaf"
       OVERLEAF_EMAIL_SMTP_PASS: ${EMAIL_PASS}
       OVERLEAF_EMAIL_SMTP_LOGGER: "true"
       OVERLEAF_CUSTOM_EMAIL_FOOTER: "This system is run by the ITP"
-      OVERLEAF_EMAIL_SMTP_IGNORE_TLS: "true"
-      OVERLEAF_EMAIL_SMTP_TLS_REJECT_UNAUTH: "false"
+      # OVERLEAF_EMAIL_SMTP_IGNORE_TLS: "true"
+      # OVERLEAF_EMAIL_SMTP_TLS_REJECT_UNAUTH: "false"
 
     networks:
       - overleaf-network
