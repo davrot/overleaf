@@ -19,6 +19,8 @@ services:
       - 6379
     networks:
       - overleaf-network
+    environment:
+      REDIS_AOF_PERSISTENCE: "true"
 
 volumes:
   overleaf_redis:
