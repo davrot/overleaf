@@ -1,7 +1,7 @@
 # docker network create overleaf-network
 services:
   overleafmongo:
-    image: "mongo:5.0"
+    image: "mongo:6.0"
     container_name: overleafmongo
     hostname: overleafmongo
     restart: always
