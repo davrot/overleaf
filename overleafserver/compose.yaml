@@ -10,11 +10,13 @@ services:
       - overleaf_tex2024:/usr/local/texlive/2024
       - overleaf_tex2024:/usr/local/texlive/2023
       - /var/run/docker.sock:/var/run/docker.sock
+# Fix HotKeyInfo
+      - /root/overleafserver/hotkeys-modal-bottom-text.jsx:/overleaf/services/web/frontend/js/features/hotkeys-modal/components/hotkeys-modal-bottom-text.jsx
 # Fix Email
       - /root/overleafserver/UserRegistrationHandler.js:/overleaf/services/web/app/src/Features/User/UserRegistrationHandler.js
 # Fix Email Admin Address
       - /root/overleafserver/EmailBuilder.js:/overleaf/services/web/app/src/Features/Email/EmailBuilder.js
-# Track Changes
+# Track Changes / Comments
       - /root/overleafserver/services/web/app/src/Features/Project/ProjectEditorHandler.js:/overleaf/services/web/app/src/Features/Project/ProjectEditorHandler.js
       - /root/overleafserver/services/web/modules/track-changes/app/src/TrackChangesController.js:/overleaf/services/web/modules/track-changes/app/src/TrackChangesController.js
       - /root/overleafserver/services/web/modules/track-changes/app/src/TrackChangesRouter.js:/overleaf/services/web/modules/track-changes/app/src/TrackChangesRouter.js
