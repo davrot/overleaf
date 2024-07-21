@@ -1,27 +1,24 @@
 # docker network create overleaf-network
 services:
   overleafserver:
-    image: "sharelatex/sharelatex:5.0.7"
+    image: "sharelatex/sharelatex:5.1.0"
     container_name: overleafserver
     hostname: overleafserver
     restart: always
     volumes:
       - overleaf_data:/var/lib/overleaf
       - overleaf_tex2024:/usr/local/texlive/2024
-      - overleaf_tex2024:/usr/local/texlive/2023
       - /var/run/docker.sock:/var/run/docker.sock
 # Fix Email
       - /root/overleafserver/UserRegistrationHandler.js:/overleaf/services/web/app/src/Features/User/UserRegistrationHandler.js
 # Fix Email Admin Address
       - /root/overleafserver/EmailBuilder.js:/overleaf/services/web/app/src/Features/Email/EmailBuilder.js
-# Track Changes / Comments
+# Track Changes
       - /root/overleafserver/services/web/app/src/Features/Project/ProjectEditorHandler.js:/overleaf/services/web/app/src/Features/Project/ProjectEditorHandler.js
       - /root/overleafserver/services/web/modules/track-changes/app/src/TrackChangesController.js:/overleaf/services/web/modules/track-changes/app/src/TrackChangesController.js
       - /root/overleafserver/services/web/modules/track-changes/app/src/TrackChangesRouter.js:/overleaf/services/web/modules/track-changes/app/src/TrackChangesRouter.js
       - /root/overleafserver/services/web/modules/track-changes/index.js:/overleaf/services/web/modules/track-changes/index.js
       - /root/overleafserver/services/web/config/settings.defaults.js:/overleaf/services/web/config/settings.defaults.js
-      - /root/overleafserver/services/web/app/src/Features/Chat/ChatManager.js:/overleaf/services/web/app/src/Features/Chat/ChatManager.js
-      - /root/overleafserver/services/web/app/src/Features/DocumentUpdater/DocumentUpdaterHandler.js:/overleaf/services/web/app/src/Features/DocumentUpdater/DocumentUpdaterHandler.js
 
     ports:
       - 11001:80
