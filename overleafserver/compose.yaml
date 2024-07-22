@@ -19,6 +19,8 @@ services:
       - /root/overleafserver/services/web/modules/track-changes/app/src/TrackChangesRouter.js:/overleaf/services/web/modules/track-changes/app/src/TrackChangesRouter.js
       - /root/overleafserver/services/web/modules/track-changes/index.js:/overleaf/services/web/modules/track-changes/index.js
       - /root/overleafserver/services/web/config/settings.defaults.js:/overleaf/services/web/config/settings.defaults.js
+# Fix
+      - /root/overleafserver/launchpad.pug:/overleaf/services/web/modules/launchpad/app/views/launchpad.pug
 
     ports:
       - 11001:80
