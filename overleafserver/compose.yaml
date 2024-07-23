@@ -7,7 +7,6 @@ services:
     restart: always
     volumes:
       - overleaf_data:/var/lib/overleaf
-      - overleaf_tex2024:/usr/local/texlive/2024
       - /var/run/docker.sock:/var/run/docker.sock
 # Fix Email
       - /root/overleafserver/UserRegistrationHandler.js:/overleaf/services/web/app/src/Features/User/UserRegistrationHandler.js
@@ -55,13 +54,22 @@ services:
       OVERLEAF_CUSTOM_EMAIL_FOOTER: "This system is run by the ITP"
       # OVERLEAF_EMAIL_SMTP_IGNORE_TLS: "true"
       # OVERLEAF_EMAIL_SMTP_TLS_REJECT_UNAUTH: "false"
+      
+      DOCKER_RUNNER: 'true'
+      TEXLIVE_IMAGE_USER: 'www-data'
+      COMPILES_HOST_DIR: "/var/lib/docker/volumes/overleafserver_overleaf_data/_data/data/compiles"
+      SANDBOXED_COMPILES: 'true'
+      SANDBOXED_COMPILES_SIBLING_CONTAINERS: 'true'
+      SANDBOXED_COMPILES_HOST_DIR: "/var/lib/docker/volumes/overleafserver_overleaf_data/_data/data/compiles"
+      TEXLIVE_IMAGE: texlive/texlive:latest-full
+      SYNCTEX_BIN_HOST_PATH: "/var/lib/docker/volumes/overleafserver_overleaf_data/_data/bin/synctex"
 
     networks:
       - overleaf-network
 
 volumes:
   overleaf_data:
-  overleaf_tex2024:
+
 
 networks:
   overleaf-network:
