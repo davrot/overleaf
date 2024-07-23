@@ -1,8 +1,0 @@
-docker exec -it overleafserver /bin/bash
-# On the container:
-cd /root
-rm -rf install-tl-*
-curl -L -o tl-unx.tar.gz https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
-tar -xzf tl-unx.tar.gz
-cd install-tl-*
-perl ./install-tl --no-interaction
