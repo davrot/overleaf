@@ -1,0 +1,26 @@
+services:
+  nodejsdev:
+    image: "node:current-alpine"
+    container_name: nodejsdev
+    hostname: nodejsdev
+    restart: always
+    command: sleep infinity
+
+    ports:
+    - 3000:3000
+
+    volumes:
+      - nodejsdev_data:/data
+      - "/root/overleafnginx/key.pem:/certs/key.pem:ro"
+      - "/root/overleafnginx/ca.pem:/certs/certificate.pem:ro"
+
+    networks:
+      - overleaf-network
+
+volumes:
+  nodejsdev_data:
+
+networks:
+  overleaf-network:
+    external: true
+

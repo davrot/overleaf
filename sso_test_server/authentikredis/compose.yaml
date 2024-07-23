@@ -1,0 +1,27 @@
+# docker network create overleaf-network
+services:
+  authentikredis:
+    image: "redis:alpine"
+    container_name: "authentikredis"
+    hostname: "authentikredis"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - authentik_redis:/data
+    ports:
+      - 6380:6379
+    networks:
+      - overleaf-network
+
+volumes:
+  authentik_redis:
+
+networks:
+  overleaf-network:
+    external: true
+
