@@ -1,0 +1,2 @@
+docker exec -it authentikserver bash
+ak create_recovery_key 10 akadmin
