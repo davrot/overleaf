@@ -30,6 +30,7 @@ services:
       # AUTHENTIK_EMAIL__TIMEOUT: 10
       AUTHENTIK_EMAIL__FROM: "overleaf@neuro.uni-bremen.de"
       AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+      AUTHENTIK_BOOTSTRAP_EMAIL: "davrot@uni-bremen.de"
     networks:
       - overleaf-network
 
@@ -61,6 +62,7 @@ services:
       # AUTHENTIK_EMAIL__TIMEOUT: 10
       AUTHENTIK_EMAIL__FROM: "overleaf@neuro.uni-bremen.de"
       AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+      AUTHENTIK_BOOTSTRAP_EMAIL: "davrot@uni-bremen.de"
 
     networks:
       - overleaf-network
