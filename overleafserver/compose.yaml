@@ -8,8 +8,6 @@ services:
     volumes:
       - overleaf_data:/var/lib/overleaf
       - /var/run/docker.sock:/var/run/docker.sock
-# Fix Email Admin Address
-      - /root/overleafserver/EmailBuilder.js:/overleaf/services/web/app/src/Features/Email/EmailBuilder.js
 # Track Changes
       - /root/overleafserver/services/web/app/src/Features/Project/ProjectEditorHandler.js:/overleaf/services/web/app/src/Features/Project/ProjectEditorHandler.js
       - /root/overleafserver/services/web/modules/track-changes/app/src/TrackChangesController.js:/overleaf/services/web/modules/track-changes/app/src/TrackChangesController.js
