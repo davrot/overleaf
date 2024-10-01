@@ -1,7 +1,7 @@
 # docker network create overleaf-network
 services:
   overleafserver:
-    image: "sharelatex/sharelatex:5.1.0"
+    image: "sharelatex/sharelatex:5.1.1"
     container_name: overleafserver
     hostname: overleafserver
     restart: always
