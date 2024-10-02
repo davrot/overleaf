@@ -9,13 +9,37 @@ services:
       - overleaf_data:/var/lib/overleaf
       - /var/run/docker.sock:/var/run/docker.sock
 # Track Changes
-      - /root/overleafserver/services/web/app/src/Features/Project/ProjectEditorHandler.js:/overleaf/services/web/app/src/Features/Project/ProjectEditorHandler.js
-      - /root/overleafserver/services/web/modules/track-changes/app/src/TrackChangesController.js:/overleaf/services/web/modules/track-changes/app/src/TrackChangesController.js
-      - /root/overleafserver/services/web/modules/track-changes/app/src/TrackChangesRouter.js:/overleaf/services/web/modules/track-changes/app/src/TrackChangesRouter.js
-      - /root/overleafserver/services/web/modules/track-changes/index.js:/overleaf/services/web/modules/track-changes/index.js
-      - /root/overleafserver/services/web/config/settings.defaults.js:/overleaf/services/web/config/settings.defaults.js
+      - /root/overleafserver/track/web/app/src/Features/Project/ProjectEditorHandler.js:/overleaf/services/web/app/src/Features/Project/ProjectEditorHandler.js
+      - /root/overleafserver/track/web/modules/track-changes/app/src/TrackChangesController.js:/overleaf/services/web/modules/track-changes/app/src/TrackChangesController.js
+      - /root/overleafserver/track/web/modules/track-changes/app/src/TrackChangesRouter.js:/overleaf/services/web/modules/track-changes/app/src/TrackChangesRouter.js
+      - /root/overleafserver/track/web/modules/track-changes/index.js:/overleaf/services/web/modules/track-changes/index.js
 # Fix latex shell escape
-      - /root/overleafserver/LatexRunner.js:/overleaf/services/clsi/app/js/LatexRunner.js
+      - /root/overleafserver/escape/LatexRunner.js:/overleaf/services/clsi/app/js/LatexRunner.js
+# Add ldap
+      - /root/overleafserver/ldap/app/src/AuthenticationControllerLdap.js:/overleaf/services/web/modules/ldap-authentication/app/src/AuthenticationControllerLdap.js
+      - /root/overleafserver/ldap/app/src/AuthenticationManagerLdap.js:/overleaf/services/web/modules/ldap-authentication/app/src/AuthenticationManagerLdap.js
+      - /root/overleafserver/ldap/app/src/InitLdapAuthentication.js:/overleaf/services/web/modules/ldap-authentication/app/src/InitLdapAuthentication.js
+      - /root/overleafserver/ldap/app/src/LdapContacts.js:/overleaf/services/web/modules/ldap-authentication/app/src/LdapContacts.js
+      - /root/overleafserver/ldap/app/src/LdapStrategy.js:/overleaf/services/web/modules/ldap-authentication/app/src/LdapStrategy.js
+      - /root/overleafserver/ldap/index.js:/overleaf/services/web/modules/ldap-authentication/index.js
+      - /root/overleafserver/ldap/app/src/Features/Authentication/AuthenticationController.js:/overleaf/services/web/app/src/Features/Authentication/AuthenticationController.js 
+      - /root/overleafserver/ldap/app/src/Features/PasswordReset/PasswordResetController.js:/overleaf/services/web/app/src/Features/PasswordReset/PasswordResetController.js
+      - /root/overleafserver/ldap/app/src/Features/PasswordReset/PasswordResetHandler.js:/overleaf/services/web/app/src/Features/PasswordReset/PasswordResetHandler.js
+      - /root/overleafserver/ldap/app/src/Features/User/UserController.js:/overleaf/services/web/app/src/Features/User/UserController.js
+      - /root/overleafserver/ldap/app/src/infrastructure/Features.js:/overleaf/services/web/app/src/infrastructure/Features.js
+      - /root/overleafserver/ldap/app/views/user/login.pug:/overleaf/services/web/app/views/user/login.pug
+      - /root/overleafserver/ldap/web/config/settings.defaults.js:/overleaf/services/web/config/settings.defaults.js
+      - /root/overleafserver/ldap/frontend/js/features/ide-react/context/review-panel/hooks/use-review-panel-state.ts:/overleaf/services/web/frontend/js/features/ide-react/context/review-panel/hooks/use-review-panel-state.ts
+      - /root/overleafserver/ldap/frontend/js/features/source-editor/hooks/use-codemirror-scope.ts:/overleaf/services/web/frontend/js/features/source-editor/hooks/use-codemirror-scope.ts
+      - /root/overleafserver/ldap/locales/en.json:/overleaf/services/web/locales/en.json
+      - /root/overleafserver/ldap/modules/launchpad/app/src/LaunchpadController.js:/overleaf/services/web/modules/launchpad/app/src/LaunchpadController.js
+      - /root/overleafserver/ldap/modules/launchpad/app/views/launchpad.pug:/overleaf/services/web/modules/launchpad/app/views/launchpad.pug
+      - /root/overleafserver/ldap/patches/ldapauth-fork+4.3.3.patch:/overleaf/patches/ldapauth-fork+4.3.3.patch
+
+# Will use the ldap version with tracking
+#      - /root/overleafserver/track/web/config/settings.defaults.js:/overleaf/services/web/config/settings.defaults.js
+      - /root/overleafserver/ldap/app/views/user/settings.pug:/overleaf/services/web/app/views/user/settings.pug
+
 
     ports:
       - 11001:80
